@@ -88,9 +88,10 @@ void processTransitPayment(TNGAccount& user) {
     cout << "\n--- TRANSIT & TOLL GATE SELECTION ---\n";
     cout << "1. Highway Express Toll (RFID / SmartTAG)\n";
     cout << "2. RapidKL LRT / MRT Gate (NFC Tap)\n";
-    cout << "Select transit mode (1-2): ";
+    cout << "3. Commercial Mall Parking\n";
+    cout << "Select transit mode (1-3): ";
     
-    int mode = getValidatedInt(1, 2);
+    int mode = getValidatedInt(1, 3);
     double fare = 0.0;
     string locationName = "";
 
@@ -108,7 +109,9 @@ void processTransitPayment(TNGAccount& user) {
             case 2: fare = 2.10; locationName = "LDP Sunway Plaza"; break;
             case 3: fare = 4.80; locationName = "PLUS Cyberjaya Toll"; break;
         }
-    } else {
+    } 
+
+    else if (mode == 2) {
         cout << "\nSelect Rail Transit Distance:\n";
         cout << "1. Short Hop (1 - 3 stations)          - RM 1.60\n";
         cout << "2. Medium Commute (4 - 8 stations)     - RM 2.90\n";
@@ -121,6 +124,37 @@ void processTransitPayment(TNGAccount& user) {
             case 2: fare = 2.90; locationName = "LRT Medium Commute"; break;
             case 3: fare = 4.20; locationName = "MRT Cross-City Line"; break;
         }
+    }
+
+    else if (mode == 3) {
+        cout << "\n--- COMMERCIAL MALL PARKING ---\n";
+        cout << "Select Commercial Mall:\n";
+        cout << "1. IOI City Mall\n";
+        cout << "2. Sunway Pyramid\n";
+        cout << "3. Mid Valley Megamall\n";
+        cout << "Select mall (1-3): ";
+        int mallChoice = getValidatedInt(1, 3);
+        
+        // Set the location name for the receipt based on user choice
+        switch (mallChoice) {
+            case 1: locationName = "IOI City Mall Parking"; break;
+            case 2: locationName = "Sunway Pyramid Parking"; break;
+            case 3: locationName = "Mid Valley Parking"; break;
+        }    
+
+        cout << "Enter total hours parked (1-24): ";
+        int hours = getValidatedInt(1, 24);
+        
+        // formula logic
+        double baseRate = 0.0;
+        if (hours <= 2) {
+            baseRate = 3.00;
+        } else {
+            baseRate = 3.00 + ((hours - 2) * 1.50);
+        }
+        
+        // mandatory 10% SST tax
+        fare = baseRate * 1.10; 
     }
 
     cout << "\nSelect Payment Channel:\n";
