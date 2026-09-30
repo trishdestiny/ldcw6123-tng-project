@@ -26,6 +26,12 @@ void displayDashboard(const TNGAccount& user);
 void processTransitPayment(TNGAccount& user);
 void processNfcReload(TNGAccount& user);
 void calculateGoPlusYield(const TNGAccount& user);
+void printAsciiReceipt(const string& transactionType, const string& location,
+                       double amount, const string& paymentMethod,
+                       double remainingBalance);
+
+
+
 int getValidatedInt(int minVal, int maxVal);
 double getValidatedDouble(double minVal);
 
@@ -171,7 +177,15 @@ void processTransitPayment(TNGAccount& user) {
             user.physicalCardBalance -= fare;
             cout << ">>> [BARRIER OPEN - PROCEED] <<<\n";
             cout << "Paid using physical NFC card. Remaining balance: RM " << user.physicalCardBalance << "\n";
-        } else {
+             printAsciiReceipt(
+        "Transit Payment",
+        locationName,
+        fare,
+        "Physical NFC Card",
+        user.physicalCardBalance
+        );
+}
+         else {
             cout << ">>> [ACCESS DENIED - INSUFFICIENT BALANCE] <<<\n";
             cout << "[!] Card only has RM " << user.physicalCardBalance 
                  << ", but fare is RM " << fare << ".\n";
@@ -183,7 +197,16 @@ void processTransitPayment(TNGAccount& user) {
             user.eWalletBalance -= fare;
             cout << ">>> [BARRIER OPEN - RFID DETECTED] <<<\n";
             cout << "Paid via eWallet PayDirect. Remaining: RM " << user.eWalletBalance << "\n";
-        } else if (user.autoReloadLinked && (user.eWalletBalance + user.goPlusBalance >= fare)) {
+            printAsciiReceipt(
+        "Transit Payment",
+        locationName,
+        fare,
+        "eWallet PayDirect",
+        user.eWalletBalance
+        );
+
+      } 
+          else if (user.autoReloadLinked && (user.eWalletBalance + user.goPlusBalance >= fare)) {
             // Pull the remaining amount needed straight from GO+
             double deficit = fare - user.eWalletBalance;
             user.goPlusBalance -= deficit;
@@ -192,6 +215,14 @@ void processTransitPayment(TNGAccount& user) {
             cout << "eWallet was short. Pulled RM " << deficit << " straight from GO+.\n";
             cout << "Updated eWallet: RM " << user.eWalletBalance 
                  << " | Updated GO+: RM " << user.goPlusBalance << "\n";
+           printAsciiReceipt(
+        "Transit Payment",
+        locationName,
+        fare,
+        "GO+ Auto-Reload",
+        user.goPlusBalance
+    );
+        
         } else {
             cout << ">>> [ACCESS DENIED - TRANSACTION FAILED] <<<\n";
             cout << "[!] Even with GO+ linked, you don't have enough funds for this trip.\n";
@@ -214,6 +245,13 @@ void processNfcReload(TNGAccount& user) {
         cout << "[OK] NFC write successful!\n";
         cout << "New Physical Card Balance : RM " << user.physicalCardBalance << "\n";
         cout << "New eWallet Balance       : RM " << user.eWalletBalance << "\n";
+    printAsciiReceipt(
+        "NFC Card Reload",
+        "Physical NFC Card",
+        reloadAmount,
+        "eWallet",
+        user.physicalCardBalance
+    );
     } else {
         cout << "\n[!] Can't reload: You only have RM " << user.eWalletBalance 
              << " in your eWallet, which is less than RM " << reloadAmount << ".\n";
@@ -278,4 +316,23 @@ double getValidatedDouble(double minVal) {
         cin.ignore(1000, '\n');
     }
     return val;
+}
+// Prints a simple ASCII receipt for successful transactions
+void printAsciiReceipt(const string& transactionType, const string& location,
+                       double amount, const string& paymentMethod,
+                       double remainingBalance) {
+    cout << "\n";
+    cout << "============================================\n";
+    cout << "             TOUCH 'N GO RECEIPT            \n";
+    cout << "============================================\n";
+    cout << " Transaction : " << transactionType << "\n";
+    cout << " Location    : " << location << "\n";
+    cout << fixed << setprecision(2);
+    cout << " Amount      : RM " << amount << "\n";
+    cout << " Paid Via    : " << paymentMethod << "\n";
+    cout << " Remaining   : RM " << remainingBalance << "\n";
+    cout << "--------------------------------------------\n";
+    cout << "        TRANSACTION SUCCESSFUL              \n";
+    cout << "============================================\n";
+    cout << "\n";
 }
