@@ -21,6 +21,18 @@ struct TNGAccount {
     bool autoReloadLinked = true;       // Pull from GO+ if eWallet runs dry
 };
 
+// Stores one successful transaction
+struct Transaction {
+    string type;
+    string location;
+    double amount;
+    string paymentMethod;
+};
+
+const int MAX_HISTORY = 5;
+Transaction transactionHistory[MAX_HISTORY];
+int transactionCount = 0;
+
 // Prototypes for our main features
 void displayDashboard(const TNGAccount& user);
 void processTransitPayment(TNGAccount& user);
@@ -29,8 +41,9 @@ void calculateGoPlusYield(const TNGAccount& user);
 void printAsciiReceipt(const string& transactionType, const string& location,
                        double amount, const string& paymentMethod,
                        double remainingBalance);
-
-
+void addTransaction(const string& type, const string& location,
+                    double amount, const string& paymentMethod);
+void displayTransactionHistory();
 
 int getValidatedInt(int minVal, int maxVal);
 double getValidatedDouble(double minVal);
@@ -51,9 +64,10 @@ int main() {
         cout << "2. Reload Physical Card via eWallet (NFC Direct)\n";
         cout << "3. Calculate GO+ Daily Micro-Yield Returns\n";
         cout << "4. Exit Simulator\n";
-        cout << "Select an option (1-4): ";
+        cout << "5. View Recent Transaction History\n";
+        cout << "Select an option (1-5): ";
 
-        mainChoice = getValidatedInt(1, 4);
+        mainChoice = getValidatedInt(1, 5);
 
         switch (mainChoice) {
             case 1:
@@ -68,8 +82,11 @@ int main() {
             case 4:
                 cout << "\n[SYSTEM] Thanks for using the TNG Simulator. Safe travels!\n";
                 break;
+            case 5:
+                displayTransactionHistory();
+                break;
             default:
-                cout << "\n[!] Invalid selection. Please pick between 1 and 4.\n";
+                cout << "\n[!] Invalid selection. Please pick between 1 and 5.\n";
         }
     } while (mainChoice != 4);
 
@@ -177,6 +194,7 @@ void processTransitPayment(TNGAccount& user) {
             user.physicalCardBalance -= fare;
             cout << ">>> [BARRIER OPEN - PROCEED] <<<\n";
             cout << "Paid using physical NFC card. Remaining balance: RM " << user.physicalCardBalance << "\n";
+            addTransaction("Transit Payment", locationName, fare, "Physical NFC Card");
              printAsciiReceipt(
         "Transit Payment",
         locationName,
@@ -197,6 +215,7 @@ void processTransitPayment(TNGAccount& user) {
             user.eWalletBalance -= fare;
             cout << ">>> [BARRIER OPEN - RFID DETECTED] <<<\n";
             cout << "Paid via eWallet PayDirect. Remaining: RM " << user.eWalletBalance << "\n";
+            addTransaction("Transit Payment", locationName, fare, "eWallet PayDirect");
             printAsciiReceipt(
         "Transit Payment",
         locationName,
@@ -215,6 +234,7 @@ void processTransitPayment(TNGAccount& user) {
             cout << "eWallet was short. Pulled RM " << deficit << " straight from GO+.\n";
             cout << "Updated eWallet: RM " << user.eWalletBalance 
                  << " | Updated GO+: RM " << user.goPlusBalance << "\n";
+            addTransaction("Transit Payment", locationName, fare, "GO+ Auto-Reload");
            printAsciiReceipt(
         "Transit Payment",
         locationName,
@@ -245,6 +265,7 @@ void processNfcReload(TNGAccount& user) {
         cout << "[OK] NFC write successful!\n";
         cout << "New Physical Card Balance : RM " << user.physicalCardBalance << "\n";
         cout << "New eWallet Balance       : RM " << user.eWalletBalance << "\n";
+        addTransaction("NFC Card Reload", "Physical NFC Card", reloadAmount, "eWallet");
     printAsciiReceipt(
         "NFC Card Reload",
         "Physical NFC Card",
@@ -295,6 +316,38 @@ void calculateGoPlusYield(const TNGAccount& user) {
     cout << " Total Interest Earned  : RM " << totalInterest << "\n";
     cout << " Final Projected Balance: RM " << runningPrincipal << "\n";
     cout << "===========================================================\n";
+}
+
+
+// Stores only the 5 most recent successful transactions
+void addTransaction(const string& type, const string& location,
+                    double amount, const string& paymentMethod) {
+    Transaction newTransaction = {type, location, amount, paymentMethod};
+
+    if (transactionCount < MAX_HISTORY) {
+        transactionHistory[transactionCount++] = newTransaction;
+    } else {
+        for (int i = 0; i < MAX_HISTORY - 1; ++i)
+            transactionHistory[i] = transactionHistory[i + 1];
+        transactionHistory[MAX_HISTORY - 1] = newTransaction;
+    }
+}
+
+// Displays newest transaction first
+void displayTransactionHistory() {
+    cout << "\n=============== RECENT TRANSACTION HISTORY ===============\n";
+    if (transactionCount == 0) {
+        cout << "No successful transactions recorded yet.\n";
+    } else {
+        cout << fixed << setprecision(2);
+        for (int i = transactionCount - 1, n = 1; i >= 0; --i, ++n) {
+            cout << n << ". " << transactionHistory[i].type << "\n";
+            cout << "   Location : " << transactionHistory[i].location << "\n";
+            cout << "   Amount   : RM " << transactionHistory[i].amount << "\n";
+            cout << "   Method   : " << transactionHistory[i].paymentMethod << "\n";
+        }
+    }
+    cout << "==========================================================\n";
 }
 
 // Catches bad inputs so the terminal doesn't crash on letters/symbols
