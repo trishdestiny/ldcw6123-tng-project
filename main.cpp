@@ -227,26 +227,28 @@ void calculateGoPlusYield(const TNGAccount& user) {
     cout << "===========================================================\n";
 }
 
-// Catches bad inputs so the terminal doesn't crash on letters/symbols
-// Optimized: Industry-standard stream flushing via numeric_limits to prevent stream corruption
+// Catches non-numeric or out-of-range inputs to prevent terminal lockup
 int getValidatedInt(int minVal, int maxVal) {
     int val;
+    // Check if input stream fails or value exceeds boundary limits
     while (!(cin >> val) || val < minVal || val > maxVal) {
         cout << "[!] Oops, invalid choice. Please enter a number between " << minVal << " and " << maxVal << ": ";
         cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(numeric_limits::max(), '\n');
     }
-    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear trailing newline
+    cin.ignore(numeric_limits::max(), '\n'); // Clear trailing newline
     return val;
 }
 
+// Validates currency amounts and prevents negative/malformed double entries
 double getValidatedDouble(double minVal) {
     double val;
+    // Check if extraction fails or entered monetary value falls below required minimum
     while (!(cin >> val) || val < minVal) {
         cout << "[!] Please enter a valid amount of at least RM " << fixed << setprecision(2) << minVal << ": ";
         cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cin.ignore(numeric_limits::max(), '\n');
     }
-   cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear trailing newline
+    cin.ignore(numeric_limits::max(), '\n'); // Clear trailing newline
     return val;
 }
