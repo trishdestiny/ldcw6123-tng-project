@@ -234,9 +234,9 @@ int getValidatedInt(int minVal, int maxVal) {
     while (!(cin >> val) || val < minVal || val > maxVal) {
         cout << "[!] Oops, invalid choice. Please enter a number between " << minVal << " and " << maxVal << ": ";
         cin.clear();
-        cin.ignore(numeric_limits::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
-    cin.ignore(numeric_limits::max(), '\n'); // Clear trailing newline
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear trailing newline
     return val;
 }
 
@@ -247,8 +247,8 @@ double getValidatedDouble(double minVal) {
     while (!(cin >> val) || val < minVal) {
         cout << "[!] Please enter a valid amount of at least RM " << fixed << setprecision(2) << minVal << ": ";
         cin.clear();
-        cin.ignore(numeric_limits::max(), '\n');
+       cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
-    cin.ignore(numeric_limits::max(), '\n'); // Clear trailing newline
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear trailing newline
     return val;
 }
