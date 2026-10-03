@@ -9,8 +9,10 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include ``
 
 using namespace std;
+
 
 // Quick struct to track the user's wallet states across cards and eWallet
 struct TNGAccount {
@@ -226,13 +228,15 @@ void calculateGoPlusYield(const TNGAccount& user) {
 }
 
 // Catches bad inputs so the terminal doesn't crash on letters/symbols
+// Optimized: Industry-standard stream flushing via numeric_limits to prevent stream corruption
 int getValidatedInt(int minVal, int maxVal) {
     int val;
     while (!(cin >> val) || val < minVal || val > maxVal) {
         cout << "[!] Oops, invalid choice. Please enter a number between " << minVal << " and " << maxVal << ": ";
         cin.clear();
-        cin.ignore(1000, '\n');
+        cin.ignore(numeric_limits::max(), '\n');
     }
+    cin.ignore(numeric_limits::max(), '\n'); // Clear trailing newline
     return val;
 }
 
@@ -241,7 +245,8 @@ double getValidatedDouble(double minVal) {
     while (!(cin >> val) || val < minVal) {
         cout << "[!] Please enter a valid amount of at least RM " << fixed << setprecision(2) << minVal << ": ";
         cin.clear();
-        cin.ignore(1000, '\n');
+        cin.ignore(numeric_limits::max(), '\n');
     }
+    cin.ignore(numeric_limits::max(), '\n'); // Clear trailing newline
     return val;
 }
